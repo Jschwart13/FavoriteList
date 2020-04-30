@@ -4,4 +4,4 @@ This is for practicing coding. This is a quick wannabe app to rank your favorite
 
 How the script works is just answer the questions.
 
-Pre-Req: you pretty much have to have a specific set-up... will work on that in the future :).
+Pre-Req: you pretty much have to have a specific set-up... will work on that in the future :)
