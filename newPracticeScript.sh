@@ -1,22 +1,22 @@
 #!/bin/bash
 insert_to_db(){
-  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'INSERT into TestDB.'$whatAreYouWatching'(title, description, ranking) VALUES ("'$t'", "'$d'", "'$r'");'
+  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'INSERT into TestDB.'$whatAreYouWatching'(title, description, ranking) VALUES ("'$t'", "'$d'", "'$r'");' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
 
 add_1_to_all_existing_ranks(){
-  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'Update TestDB.'$whatAreYouWatching' set ranking = ranking + 1 where ranking >= '$r';'
+  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'Update TestDB.'$whatAreYouWatching' set ranking = ranking + 1 where ranking >= '$r';' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
 
 select_count_from_db(){
-  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT COUNT(*) from TestDB.'$whatAreYouWatching';'
+  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT COUNT(*) from TestDB.'$whatAreYouWatching';' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
 
 select_where_ranking_equals_r(){
-  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT title from TestDB.'$whatAreYouWatching' where ranking = '$r';'
+  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT title from TestDB.'$whatAreYouWatching' where ranking = '$r';' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
 
 worstRank(){
-  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT ranking from TestDB.'$whatAreYouWatching' order by ranking DESC LIMIT 0,1;'
+  docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT ranking from TestDB.'$whatAreYouWatching' order by ranking DESC LIMIT 0,1;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
 
 setWorseRankPlusOne(){
@@ -30,7 +30,7 @@ completionMessage(){
 
 displayCurrentResults(){
   echo "Here are your current results!"
-  docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT ranking, title from TestDB.'$whatAreYouWatching' order by ranking ASC;'
+  docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT ranking, title from TestDB.'$whatAreYouWatching' order by ranking ASC;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
 
 insertCompletionMessageAndDisplay(){
@@ -51,7 +51,7 @@ read t
 echo -n "Can you give a brief description of" $t "? "
 read d
 
-doesYourTableExist=$(docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'show tables like "'$whatAreYouWatching'"';)
+doesYourTableExist=$(docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'show tables like "'$whatAreYouWatching'"' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure.")
 
 if [[ $doesYourTableExist != '' ]]; then
   count=$(select_count_from_db)
@@ -66,7 +66,7 @@ echo "Do I have this right? The title is:" $t
 echo "The description is:" $d
 echo "And the initial ranking is:" $r
 
-docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'CREATE TABLE if not EXISTS TestDB.'$whatAreYouWatching'( title varchar(255), description varchar(255), ranking int );'
+docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'CREATE TABLE if not EXISTS TestDB.'$whatAreYouWatching'( title varchar(255), description varchar(255), ranking int );' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 count=$(select_count_from_db)
 
 if [[ $count == 0 ]]; then
@@ -76,7 +76,7 @@ if [[ $count == 0 ]]; then
   exit 1;
 elif [[ $count == 1 ]]; then
   echo "This is only the second entry for '$whatAreYouWatching'!"
-  onlyTitle=$(docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT title from TestDB.'$whatAreYouWatching';')
+  onlyTitle=$(docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT title from TestDB.'$whatAreYouWatching';' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure.")
   echo -n "Is" $t "better than" $onlyTitle "? (yes or no) "
   read answer
   if [[ $answer == 'yes' ]]; then
