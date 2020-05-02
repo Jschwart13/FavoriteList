@@ -1,4 +1,8 @@
 #!/bin/bash
+addBlankSpace(){
+  echo ""
+}
+
 insert_to_db(){
   docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'INSERT into TestDB.'$whatAreYouWatching'(title, description, ranking) VALUES ("'$t'", "'$d'", "'$r'");' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
@@ -30,7 +34,12 @@ completionMessage(){
 
 displayCurrentResults(){
   echo "Here are your current results!"
+  addBlankSpace
   docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'SELECT ranking, title from TestDB.'$whatAreYouWatching' order by ranking ASC;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
+}
+
+showTablesInDB(){
+  docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'show tables;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
 }
 
 insertCompletionMessageAndDisplay(){
@@ -41,24 +50,23 @@ insertCompletionMessageAndDisplay(){
 
 shopt -s nocasematch
 echo -n "Here are your options:
-1) new entry
-2) see current ranking for a franchise
+1) new movie entry
+2) see current movie rankings for a specific franchise
 
 Please enter the number of your option: "
 read whatYouTrynaDo
 
 if [[ $whatYouTrynaDo == "1" ]]; then
   docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -e'CREATE DATABASE IF NOT EXISTS TestDB;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
-  echo "Bringing up your DB :)
-  "
+  echo "Bringing up your DB :)"
+  addBlankSpace
 
   sleep 1s
 
-  echo "Here is a list of all of your movie franchises!
-  "
-  docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'show tables;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
-
-  echo ""
+  echo "Here is a list of all of your movie franchises!"
+  addBlankSpace
+  showTablesInDB
+  addBlankSpace
 
   shopt -s nocasematch
   echo -n "What did you watch today? (1 word, for example StarWars): "
@@ -140,7 +148,6 @@ if [[ $whatYouTrynaDo == "1" ]]; then
         exit 1;
       fi
 
-
       setWorseRankPlusOne
       while [[ r -lt $worstRankPlusOne && $currentRankingTitle != '' ]]; do
         if [[ $rankingTitleBeforeNo == $currentRankingTitle ]]; then
@@ -218,12 +225,21 @@ if [[ $whatYouTrynaDo == "1" ]]; then
     done
   fi
 
-
   echo "Nice. Doing some DB work now..."
   add_1_to_all_existing_ranks
   insertCompletionMessageAndDisplay
 elif [[ $whatYouTrynaDo == "2" ]]; then
-  echo "this is another test"
+  echo "Here are your curent titles:"
+  addBlankSpace
+  showTablesInDB
+  addBlankSpace
+
+  echo -n "What are you trying to view your rankings for? (you can just copy and paste from the list) "
+  read whatAreYouWatching
+
+  addBlankSpace
+  displayCurrentResults
+
 else
   echo "That's not an option bro. Be smarter. Try script again."
 fi
