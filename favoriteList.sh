@@ -39,26 +39,36 @@ insertCompletionMessageAndDisplay(){
   displayCurrentResults
 }
 
-echo "Hi how are you today?"
+docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -e'CREATE DATABASE IF NOT EXISTS TestDB;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
+echo "Bringing up your DB :)
+"
+
+sleep 1s
+
+echo "Here is a list of all of your movie franchises!
+"
+docker run --network=host --rm mysql mysql -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'show tables;' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure."
+
+echo ""
 
 shopt -s nocasematch
-echo -n "What did you watch today? (1 word, for example StarWars) "
+echo -n "What did you watch today? (1 word, for example StarWars): "
 read whatAreYouWatching
 
-echo -n "I'm glad you are watching" $whatAreYouWatching ". Can you type title of the" $whatAreYouWatching "episode? "
+echo -n "I'm glad you are watching" $whatAreYouWatching ". Can you type title of the" $whatAreYouWatching "episode?: "
 read t
 
-echo -n "Can you give a brief description of" $t "? "
+echo -n "Can you give a brief description of" $t "?: "
 read d
 
 doesYourTableExist=$(docker run --network=host --rm mysql mysql -N -h127.0.0.1 -uroot -pmy-secret-pw -DTestDB -e'show tables like "'$whatAreYouWatching'"' 2>/dev/null | grep -v "mysql: [Warning] Using a password on the command line interface can be insecure.")
 
 if [[ $doesYourTableExist != '' ]]; then
   count=$(select_count_from_db)
-  echo -n "If you were to rank it, where do you think it would rank against all other episodes of of" $franchise_or_series_name "? Just remember you have" $count "entries right now "
+  echo -n "If you were to rank it, where do you think it would rank against all other episodes of" $whatAreYouWatching "? (Just remember you have" $count "entries right now): "
   read r
 else
-  echo -n "If you were to rank it, where do you think it would rank against all other episodes of of" $franchise_or_series_name "? "
+  echo -n "If you were to rank it, where do you think it would rank against all other episodes of" $whatAreYouWatching "?: "
   read r
 fi
 
@@ -155,7 +165,7 @@ done
 
 if [[ $currentRankingTitle == '' ]]; then
   echo "Whoa. You ranked this last???"
-  declare -i r=$( expr $r - 1 )
+  declare -i r=$count
   currentRankingTitle=$(select_where_ranking_equals_r)
   while [[ r -gt 0 ]]; do
     worstRankVar=$(worstRank)
